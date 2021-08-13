@@ -27,7 +27,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.7",
     "morgan": "^1.10.0",
-    "normalize-url": "^4.5.1"
+    "normalize-url": "^5.1.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.12"

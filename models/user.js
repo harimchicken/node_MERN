@@ -59,6 +59,13 @@ userSchema.pre('save', async function (next) {
     }
 }) 
 
+// 패스워드 매칭 함수
+userSchema.methods.comparePassword = function (candidatePasswrod, cb) {
+    bcrypt.compare(candidatePasswrod, this.password, function (err, isMatch) {
+        if (err) throw cb(err);
+        cb(null, isMatch)
+    })
+}
 
 
 module.exports = user = mongoose.model('user', userSchema)
