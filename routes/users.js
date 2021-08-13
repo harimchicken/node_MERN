@@ -1,6 +1,7 @@
 
 const express = require('express')
 const bcrypt = require('bcryptjs')
+const gravatar = require('gravatar')
 const router = express.Router()
 
 const userModel = require('../models/user')
@@ -22,12 +23,22 @@ router.post('/register', (req, res) => {
                     message: 'Email already exists'
                 })
             } else {
+
+                // 어떤것을 기준으로 만들거냐
+                const avatar = gravatar.url(email, {
+                    s: '200',   // size
+                    r: 'pg',    // Rating
+                    d: 'mm'     // Default
+                })
+
+
+
                 // 패스워드 암호화
                 bcrypt.hash(password, 10, (err, hash) => {
                     if (err) throw err;
                     // 디비에 저장
                     const newUser = new userModel({
-                        name, email, password: hash
+                        name, email, password: hash, avatar
                     })
                     newUser
                         .save()
