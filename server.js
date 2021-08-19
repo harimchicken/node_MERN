@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
+const passport = require('passport')
 const app = express();
 
 require('./config/database')
@@ -17,6 +18,9 @@ const postsRoute = require('./routes/posts')
 app.use(morgan('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false}))
+
+app.use(passport.initialize())
+require('./config/passport')(passport)
 
 
 // Use Routes

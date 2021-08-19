@@ -2,6 +2,10 @@
 const express = require('express')
 const router = express.Router()
 
+const passport = require('passport')
+
+const checkauth = passport.authenticate('jwt', { session: false});
+
 const {
     user_register,
     user_loggedIn
@@ -20,6 +24,17 @@ router.post('/register', user_register)
 // @desc    LoggedIn user // return jwt
 // @access  Public
 router.post('/login', user_loggedIn)
+
+// @route   Get localhost:5000/api/users/login/current
+// @desc    Current LoggedIn user // return userinfo
+// @access  Private
+router.get('/current', checkauth, (req, res) => {
+    req.user.password = undefined
+    res.json(req.user);
+
+})
+
+
 
 
 
