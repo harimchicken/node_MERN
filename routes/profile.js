@@ -29,7 +29,7 @@ router.get('/', checkauth, (req, res) => {
 })
 
 // @route   POST api/profile 
-// @desc    Register user profile
+// @desc    Register / update user profile
 // @access  Private
 
 router.post('/', checkauth, (req, res) => {
@@ -37,7 +37,7 @@ router.post('/', checkauth, (req, res) => {
 
     profileFields.user = req.user.id;
     if (req.body.handle) profileFields.handle = req.body.handle;
-    if (req.body.user) profileFields.user = req.body.user;
+    if (req.body.user) profileFields.user = req.user.id
     if (req.body.company) profileFields.company = req.body.company;
     if (req.body.website) profileFields.website = req.body.website;
     if (req.body.location) profileFields.location = req.body.location;
@@ -54,14 +54,28 @@ router.post('/', checkauth, (req, res) => {
         .findOne( {user: req.user.id })
         .then(profile => {
             if (profile) {
-                return res.status(400).json({
-                    msg: "등록된 프로필이 있습니다. 업데이트 또는 삭제 후 다시 등록해주세요"
-                })
+                // update code
+                profileModel
+                    .findOneAndUpdate(
+                        {user: req.user.id}, // 업데이트 할 대상자
+                        { $set: profileFields}, // 업데이트 내용
+                        { new: true}  // 옵션
+                    )
+                    .then(profile => res.json(profile))
+                    .catch(err => res.status(408).json(err))
+
+
+
+
+
+                // return res.status(400).json({
+                //     msg: "등록된 프로필이 있습니다. 업데이트 또는 삭제 후 다시 등록해주세요"
+                // })
             }
             const newProfile = new profileModel(profileFields)
             newProfile
                 .save()
-                .populate ('user')
+                // .populate ('user')
                 .then(profile => res.json(profile))
         })
         .catch(err => res.status(500).json(err))
