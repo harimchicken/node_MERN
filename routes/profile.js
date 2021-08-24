@@ -2,7 +2,8 @@
 const express = require('express')
 const router = express.Router()
 
-const passport = require('passport')
+const passport = require('passport');
+const profile = require('../models/profile');
 
 const checkauth = passport.authenticate('jwt', { session: false});
 
@@ -123,6 +124,24 @@ router.put('/', checkauth, (req, res) => {
         })
         .catch(err => res.status(500).json(err))
 }) 
+
+
+// @route   Delete api/profile 
+// @desc    delete user profile
+// @access  Private
+
+router.delete('/', checkauth, (req, res) => {
+
+    profileModel
+        .findOneAndRemove({user: req.user.id})
+        .then(result => {
+            res.json({
+                msg: "Deleted your profile"
+            })
+        })
+        .catch(err => res.status(500).json(err))
+})
+
 
 
 
