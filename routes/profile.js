@@ -179,5 +179,37 @@ router.post('/experience', checkauth, (req, res) => {
 })
 
 
+// @route   POST api/profile/education 
+// @desc    Add education to profile
+// @access  Private
+
+router.post('/education', checkauth, (req, res) => {
+
+    profileModel
+        .findOne({user: req.user.id})
+        .then(profile => {
+            console.log("++++++++++", profile)
+            if (!profile) {
+                return res.status(404).json({
+                    message: "There is no profile for this user"
+                })
+            } else {
+                const newEdu = {
+                    school: req.body.school,
+                    degree: req.body.degree,
+                    fieldofstudy: req.body.fieldofstudy,
+                    from: req.body.from,
+                    current: req.body.current
+                }
+
+                profile.education.unshift(newEdu)
+                profile
+                    .save()
+                    .then(profile => res.json(profile))
+                    .catch(err => res.status(500).json(err))
+            }
+        })
+        .catch(err => res.status(500).json(err))
+})
 
 module.exports = router
