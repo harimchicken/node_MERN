@@ -142,6 +142,41 @@ router.delete('/', checkauth, (req, res) => {
         .catch(err => res.status(500).json(err))
 })
 
+// @route   POST api/profile/experience 
+// @desc    Add experience to profile
+// @access  Private
+
+router.post('/experience', checkauth, (req, res) => {
+    
+    profileModel
+        .findOne({user: req.user.id})
+        .then(profile => {
+            console.log("++++++++++", profile)
+            if (!profile) {
+                return res.status(404).json({
+                    message: 'There is no profile for this user'
+                })
+            } else {
+                const newExp = {
+                    title: req.body.title,
+                    company: req.body.company,
+                    location: req.body.location,
+                    from: req.body.from,
+                    to: req.body.to,
+                    current: req.body.current,
+                    description: req.body.description
+                };
+
+                profile.experience.unshift(newExp)
+                profile
+                    .save()
+                    .then(profile => res.json(profile))
+                    .catch(err => res.status(500).json(err))
+            }
+
+        })
+        .catch(err => res.status(500).json)
+})
 
 
 
