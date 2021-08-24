@@ -71,15 +71,15 @@ router.post('/', checkauth, (req, res) => {
                 // return res.status(400).json({
                 //     msg: "등록된 프로필이 있습니다. 업데이트 또는 삭제 후 다시 등록해주세요"
                 // })
+            } else {
+                const newProfile = new profileModel(profileFields)
+                newProfile
+                    .save()
+                    // .populate ('user')
+                    .then(user => res.json(user))
             }
-            const newProfile = new profileModel(profileFields)
-            newProfile
-                .save()
-                // .populate ('user')
-                .then(profile => res.json(profile))
         })
         .catch(err => res.status(500).json(err))
-
 
 
 })

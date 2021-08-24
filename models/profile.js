@@ -35,8 +35,8 @@ const ProfileSchema = new Schema(
         githubusername: {
             type: String
         },
-        experience: [],
-        education: []
+        experience: [String],
+        education: [String]
     },
     {
         timestamps: true
