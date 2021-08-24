@@ -212,4 +212,27 @@ router.post('/education', checkauth, (req, res) => {
         .catch(err => res.status(500).json(err))
 })
 
+// @route   DELETE api/profile/experience/:exp_id
+// @desc    Delete experience from profile
+// @access  Private
+
+router.delete('/experience/:exp_id', checkauth, (req, res) => {
+
+    const expId = req.params.exp_id
+
+    profileModel
+        .findOne({ user: req.user.id })
+        .then(profile => {
+            console.log("+++++++++++++", profile)
+            const removeIndex = profile.experience
+            .map(item => item.id)
+            .indexOf(expId)
+
+            // splice out of array
+            profile.experience.splice(removeIndex, 1)
+            profile.save().then(profile => res.json(profile))
+        })
+        .catch(err => res.status(500).json(err))
+})
+
 module.exports = router
