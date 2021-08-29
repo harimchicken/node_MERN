@@ -62,5 +62,64 @@ router.post('/', checkauth, (req, res) => {
 })
 
 
+// @route   Put api/posts/:id
+// @desc    Update post by id
+// @access  Private (등록된 유저만 수정 가능)
+
+router.put('/:id', checkauth, (req, res) => {
+
+
+})
+
+
+// @route   DELETE api/posts/:id
+// @desc    Delete post by id
+// @access  Private (등록된 유저만 삭제 가능)
+
+router.delete('/:id', checkauth, (req, res) => {
+
+    const postId = req.params.id
+
+    // 삭제할 대상을 찾는다
+    postModel
+        .findById(postId)
+        .then(post => {
+            console.log("+++++++++++++", post.user)
+            // 글쓴 사림인지 검증
+            if (post.user.toString() !== req.user.id) {
+                return res.status(401).json({
+                    message: "User not authorized"
+                })
+            } else {
+                // // 포스트 삭제
+                postModel
+                    .findByIdAndRemove(postId)
+                    .then(() => {
+                        res.json({
+                            message: 'delete post'
+                        })
+                    })
+                    .catch(err => res.status(500).json(err))
+            }
+        })
+            
+})
+
+
+
+
+// router.delete('/', checkauth, (req, res) => {
+
+//     postModel
+//         .findOneAndRemove({user: req.post.id})
+//         .then(result => {
+//             res.json({
+//                 message: "deleted post"
+//             })
+//         })
+//         .catch(err => res.status(500).json(err))
+// })
+
+
 
 module.exports = router
