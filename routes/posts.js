@@ -106,19 +106,63 @@ router.delete('/:id', checkauth, (req, res) => {
 })
 
 
+// @route   POST api/posts/like/:id
+// @desc    Like post
+// @access  Private (로그인한 사람이면 누구든지 가능)
+
+router.post('/like/:id', checkauth, (req, res) => {
+
+    const postId = req.params.id;
+
+    postModel
+        .findById(postId)
+        .then(post => {
+            // 게시물에 좋아요를 했는지 여부 확인
+            if (post.likes.filter(like => like.user.toString() === req.user.id).length > 0) {
+                // 좋아요를 했다면
+                return res.status(400).json({
+                    message: "User already liked this post"
+                })
+            } 
+
+            // Add user id to likes array
+            post.likes.unshift({user: req.user.id})
+            post.save().then(post => res.json(post))
+        })
+        .catch(err => res.status(500).json(err))
+})
 
 
-// router.delete('/', checkauth, (req, res) => {
+// @route   POST api/posts/unlike/:id
+// @desc    Unlike post
+// @access  Private (로그인한 사람이면 누구든지 가능)
+router.post('/unlike/:id', checkauth, (req, res) => {
+    
+    const postId = req.params.id;
 
-//     postModel
-//         .findOneAndRemove({user: req.post.id})
-//         .then(result => {
-//             res.json({
-//                 message: "deleted post"
-//             })
-//         })
-//         .catch(err => res.status(500).json(err))
-// })
+    postModel
+        .findById(postId)
+        .then(post => {
+            // 게시물에 좋아요를 했는지 여부 확인
+            if (post.likes.filter(like => like.user.toString() === req.user.id).length === 0) {
+                return res.status(404).json({
+                    message: "You have not liked this post"
+                })
+            }
+
+            // get remove index
+            const removeIndex = post.likes
+            .map(item => item.user.toString())
+            .indexOf(req.user.id);
+
+            // splice out of array
+            post.likes.splice(removeIndex, 1);
+
+            // save
+            post.save().then(post => res.json(post));
+        })
+        .catch(err => res.status(500).json(err))
+})
 
 
 
