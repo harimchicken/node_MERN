@@ -113,4 +113,67 @@ router.post('/comment/:id', checkauth, (req, res) => {
     //     .catch()
 
 })
+
+// @route   DELETE api/posts/comment/:id/:comment_id
+// @desc    Remove comment from post
+// @access  Private
+
+router.delete('/comment/:postId/:commentId', checkauth, (req, res) => {
+    postModel
+        .findById(req.params.postId)
+        .then(post => {
+            if(post.comment.filter(comment => comment._id.toString() === req.params.commentId).length === 0) {
+                return res.status(400).json({ msg: 'Comment does not exist' });
+            }
+            //삭제(배열)
+            const removeIndex = post.comment
+                .map(item => item._id.toString()) //_id를 toString으로 바꿔줌
+                .indexOf(req.params.commentId)
+                //잘라내기
+            post.comment.splice(removeIndex, 1);
+            post
+                .save()
+                .then(post => {
+                    res.json(post)
+                });
+        });
+});
+
+
+
+// router.delete('/comment/:postId/:commentId', checkauth, (req, res) => {
+   
+//     console.log(req.params.postId)
+//     console.log(req.params.commentId)
+
+
+//     postModel
+//         .findById(req.params.postId)
+//         .then(post => {
+//             // console.log("++++++++++++++++", post)
+//             // if (post.comment.filter(c => c.user.toString() === req.user.id).length === 0 ) {
+//             //     return res.status(404).json({
+//             //         message: "Comment does't exist"
+//             //     })
+//             // } else {
+//                 // get remove index
+//             const removeIndex = post.comment
+//             .map(item => item._id.toString())
+//             .indexOf(commentid)
+
+//         console.log(removeIndex)
+        
+//         // splice comment out of array
+//         post.comment.splice(removeIndex, 1);
+//         post.save().then(post => res.json(post));
+//             // }
+
+            
+//         })
+//         .catch(err => res.status(500).json(err))
+
+
+
+
+
 module.exports = router
