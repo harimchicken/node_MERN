@@ -12,7 +12,9 @@ const {
     posts_post_post,
     posts_delete_post,
     posts_like_post,
-    posts_unlike_post
+    posts_unlike_post,
+    posts_post_comment,
+    posts_delete_comment
 } = require('../controllers/post');
 
 // @route   GET api/posts/total
@@ -76,68 +78,13 @@ router.post('/unlike/:id', checkauth, posts_unlike_post)
 // @route   POST api/posts/comment/:id
 // @desc    Add comment to post
 // @access  Private
-router.post('/comment/:id', checkauth, (req, res) => {
-    const postId = req.params.id;
-    const {name, text} = req.body;
-
-    postModel
-        .findById(postId)
-        .then(post => {
-            if (!post) {
-                return res.status(400).json({
-                    message: "no post by id"
-                })
-            } else {
-                const newComment = {
-                    text,
-                    name,
-                    user: req.user.id
-                }
-                post.comment.unshift(newComment)
-                post.save().then(post => res.json(post))
-            }
-        })
-        .catch(err => res.status(500).json(err))
-
-
-    // const postId = req.params.id;
-
-    // postModel
-    //     .findbyId(postId)
-    //     .then(post => {
-    //         res.json(post)
-    //     })
-
-    //     post.comment.unshift({user: req.user.id})
-    //     this.post.save()
-    //     .catch()
-
-})
+router.post('/comment/:id', checkauth, posts_post_comment)
 
 // @route   DELETE api/posts/comment/:id/:comment_id
 // @desc    Remove comment from post
 // @access  Private
 
-router.delete('/comment/:postId/:commentId', checkauth, (req, res) => {
-    postModel
-        .findById(req.params.postId)
-        .then(post => {
-            if(post.comment.filter(comment => comment._id.toString() === req.params.commentId).length === 0) {
-                return res.status(400).json({ msg: 'Comment does not exist' });
-            }
-            //삭제(배열)
-            const removeIndex = post.comment
-                .map(item => item._id.toString()) //_id를 toString으로 바꿔줌
-                .indexOf(req.params.commentId)
-                //잘라내기
-            post.comment.splice(removeIndex, 1);
-            post
-                .save()
-                .then(post => {
-                    res.json(post)
-                });
-        });
-});
+router.delete('/comment/:postId/:commentId', checkauth, posts_delete_comment);
 
 
 
