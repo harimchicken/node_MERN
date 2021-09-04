@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router()
 const passport = require('passport');
+const postModel = require('../models/post');
 
 const checkauth = passport.authenticate('jwt', { session: false});
 
@@ -72,6 +73,44 @@ router.post('/like/:id', checkauth, posts_like_post)
 // @access  Private (로그인한 사람이면 누구든지 가능)
 router.post('/unlike/:id', checkauth, posts_unlike_post)
 
+// @route   POST api/posts/comment/:id
+// @desc    Add comment to post
+// @access  Private
+router.post('/comment/:id', checkauth, (req, res) => {
+    const postId = req.params.id;
+    const {name, text} = req.body;
+
+    postModel
+        .findById(postId)
+        .then(post => {
+            if (!post) {
+                return res.status(400).json({
+                    message: "no post by id"
+                })
+            } else {
+                const newComment = {
+                    text,
+                    name,
+                    user: req.user.id
+                }
+                post.comment.unshift(newComment)
+                post.save().then(post => res.json(post))
+            }
+        })
+        .catch(err => res.status(500).json(err))
 
 
+    // const postId = req.params.id;
+
+    // postModel
+    //     .findbyId(postId)
+    //     .then(post => {
+    //         res.json(post)
+    //     })
+
+    //     post.comment.unshift({user: req.user.id})
+    //     this.post.save()
+    //     .catch()
+
+})
 module.exports = router
