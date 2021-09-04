@@ -58,7 +58,8 @@ router.post('/register', (req, res) => {
                     .send(emailData)
                     .then(() => {
                         res.json({
-                            message: `Email has been sent to ${email}`
+                            message: `Email has been sent to ${email}`,
+                            token
                         })
                     })
                     .catch(err => res.status(408).json(err))
@@ -68,6 +69,40 @@ router.post('/register', (req, res) => {
 })
 
 // router.post('/register', user_register)
+
+
+// @route POST user/activation
+// @desc  Activation account / confrim email
+// @access Private
+router.post('/activation', (req, res) => {
+    const { token } = req.body
+    if (token) {
+        jwt.verify(token, process.env.SECRET_KEY, (err, decode) => {
+            if (err) {
+                return res.status(401).json({
+                    errors: 'Expired link. Signup agian'
+                })
+            } else {
+                const {name, email, password} = jwt.decode(token)
+                const newUser = new userModel({
+                    name, email, password
+                })
+
+                newUser.save()
+                    .then(user => {
+                        user.password = undefined;
+                        res.json({
+                            message: "successful signup",
+                            userInfo: user
+                        })
+                    })
+                    .catch(err => res.status(408).json(err))
+            }
+        })
+    }
+})
+
+
 
 
 // @route   POST localhost:5000/api/users/login
