@@ -8,6 +8,7 @@ const JwtStrategy = require('passport-jwt/lib/strategy');
 
 const checkauth = passport.authenticate('jwt', { session: false});
 const checkgoogle = passport.authenticate('googleToken', { session: false});
+const checkfacebook = passport.authenticate('facebookToken', { session: false });
 
 const {
     user_register,
@@ -62,5 +63,23 @@ router.get('/google', checkgoogle, (req, res) => {
     })
 })
 
+
+// @route   Get localhost:5000/api/users/facebook
+// @desc    LoggedIn user from facebook // return jwt
+// @access  Public
+router.get('/facebook', checkfacebook, (req, res) => {
+    const payload = { id: req.user._id }
+
+    const token = jwt.sign(
+        payload,
+        process.env.SECRET_KEY,
+        {expiresIn: '1h'}
+    )
+
+    res.json({
+        success: true,
+        token: "Bearer " + token
+    })
+})
 
 module.exports = router
