@@ -2,106 +2,33 @@
 const express = require('express')
 const router = express.Router()
 
-const passport = require('passport')
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
+const JwtStrategy = require('passport-jwt/lib/strategy');
 
 const checkauth = passport.authenticate('jwt', { session: false});
-
-const jwt = require('jsonwebtoken');
-
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.EMAIL_KEY);
-
-const userModel = require('../models/user');
+const checkgoogle = passport.authenticate('googleToken', { session: false});
 
 const {
     user_register,
-    user_loggedIn
+    user_activation,
+    user_loggedIn,
+    user_current
 } = require('../controllers/user')
 
 
 // @route   POST localhost:5000/api/users/register
 // @desc    가입 정보를 암호화(token)해서 메일로 보냄
 // @access  Public
-router.post('/register', (req, res) => {
-    const {name, email, password} = req.body;
-    
-    userModel
-        .findOne({email})
-        .then(user => {
-            if (user) {
-                return res.status(400).json({
-                    message: "email exists"
-                })
-            } else {
-                const payload = {name, email, password}
 
-                const token = jwt.sign(
-                    payload,
-                    process.env.SECRET_KEY,
-                    {expiresIn: '10m'}
-                )
-
-                const emailData = {
-                    from: process.env.EMAIL_FROM,
-                    to: email,
-                    subject: 'Account activation link',
-                    html: `
-                        <h1>Please use the following to activate your account</h1>                    
-                        <p>http://localhost:3000/user/activate/${token}</p>
-                        <hr />
-                        <p>This email may contain sensetive information</p>
-                        <p>http://localhost:3000</p> 
-                     `
-                }
-
-                sgMail
-                    .send(emailData)
-                    .then(() => {
-                        res.json({
-                            message: `Email has been sent to ${email}`,
-                            token
-                        })
-                    })
-                    .catch(err => res.status(408).json(err))
-            }
-        })
-        .catch(err => res.status(500).json(err))
-})
-
-// router.post('/register', user_register)
+router.post('/register', user_register)
 
 
 // @route POST user/activation
 // @desc  Activation account / confrim email
 // @access Private
-router.post('/activation', (req, res) => {
-    const { token } = req.body
-    if (token) {
-        jwt.verify(token, process.env.SECRET_KEY, (err, decode) => {
-            if (err) {
-                return res.status(401).json({
-                    errors: 'Expired link. Signup agian'
-                })
-            } else {
-                const {name, email, password} = jwt.decode(token)
-                const newUser = new userModel({
-                    name, email, password
-                })
 
-                newUser.save()
-                    .then(user => {
-                        user.password = undefined;
-                        res.json({
-                            message: "successful signup",
-                            userInfo: user
-                        })
-                    })
-                    .catch(err => res.status(408).json(err))
-            }
-        })
-    }
-})
-
+router.post('/activation', user_activation)
 
 
 
@@ -110,17 +37,30 @@ router.post('/activation', (req, res) => {
 // @access  Public
 router.post('/login', user_loggedIn)
 
+
 // @route   Get localhost:5000/api/users/login/current
 // @desc    Current LoggedIn user // return userinfo
 // @access  Private
-router.get('/current', checkauth, (req, res) => {
-    req.user.password = undefined
-    res.json(req.user);
+router.get('/current', checkauth, user_current)
 
+
+// @route   Get localhost:5000/api/users/google
+// @desc    LoggedIn user from google // return jwt
+// @access  Public
+router.get('/google', checkgoogle, (req, res) => {
+    const payload = { id: req.user._id }
+
+    const token = jwt.sign(
+        payload,
+        process.env.SECRET_KEY,
+        {expiresIn: '1h'}
+    )
+
+    res.json({
+        success: true,
+        token: "Bearer " + token
+    })
 })
-
-
-
 
 
 module.exports = router

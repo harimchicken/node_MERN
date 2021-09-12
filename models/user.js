@@ -22,6 +22,10 @@ const userSchema = new Schema(
         },
         avatar: {
             type: String
+        },
+        source: {
+            type: String,
+            default: 'email'
         }
     },
     {
@@ -33,18 +37,32 @@ const userSchema = new Schema(
 userSchema.pre('save', async function (next) {
     try {
         console.log('entered')
-        // 아바타 생성
-        const avatar = await normalize(
-            gravatar.url(this.email, {
-                s: '200',
-                r: 'pg',
-                d: 'mm'
-            }),
-            { forceHttps: true }
-        )
-        
-        this.avatar = avatar;
-        // 패스워드 암호화
+
+        if (this.source === 'email') {
+            // 아바타 생성
+            const avatar = await normalize(
+                gravatar.url(this.email, {
+                    s: '200',
+                    r: 'pg',
+                    d: 'mm'
+                }),
+                { forceHttps: true }
+            )
+            
+            this.avatar = avatar;
+            
+            // 소셜로 로그인시 패스워드만 암호화, 프로필 이미지는 소셜에서 제공하는 이미지로 대체
+            // 패스워드 암호화
+            const salt = await bcrypt.genSalt(10)
+            const hashedPassword = await bcrypt.hash(this.password, salt)
+
+            this.password = hashedPassword
+
+            console.log('exited')
+            next()
+        }
+
+    // 패스워드 암호화
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(this.password, salt)
 
