@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/harimchicken/node_MERN#readme",
   "dependencies": {
+    "-": "^0.0.1",
     "@sendgrid/mail": "^7.4.6",
     "bcryptjs": "^2.4.3",
     "body-passer": "^1.0.0",
@@ -28,11 +29,15 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.2",
     "morgan": "^1.10.0",
+    "naver": "^0.0.1",
     "normalize-url": "^5.1.0",
     "passport": "^0.4.1",
     "passport-facebook-token": "^4.0.0",
     "passport-google-plus-token": "^2.1.0",
-    "passport-jwt": "^4.0.0"
+    "passport-jwt": "^4.0.0",
+    "passport-kakao": "^1.0.1",
+    "passport-kakao-token": "^0.1.5",
+    "passport-naver": "^1.0.6"
   },
   "devDependencies": {
     "nodemon": "^2.0.12"

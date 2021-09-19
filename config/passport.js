@@ -2,8 +2,9 @@
 const { Strategy, ExtractJwt } = require('passport-jwt');
 const userModel = require('../models/user')
 const GooglePlusTokenStrategy = require('passport-google-plus-token');
-const facebooktokenStrategy = require('passport-facebook-token');
 const FacebookTokenStrategy = require('passport-facebook-token');
+const naverStrategy = require('passport-naver').Strategy;
+const kakaoStrategy = require('passport-kakao').Strategy;
 
 const opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
@@ -85,5 +86,6 @@ module.exports = passport => {
             done(error, false, error.message);
         }
     }))
+
 
 }
