@@ -10,6 +10,8 @@ sgMail.setApiKey(process.env.EMAIL_KEY)
 
 const userModel = require('../models/user');
 
+const lodash = require('lodash');
+
 const checkauth = passport.authenticate('jwt', { session: false});
 const checkgoogle = passport.authenticate('googleToken', { session: false});
 const checkfacebook = passport.authenticate('facebookToken', { session: false });
@@ -179,6 +181,46 @@ router.put('/forgotpassword', (req, res) => {
 
         })
         .catch(err => res.status(500).json(err))
+})
+
+// @route   PUT user/resetpassword
+// @desc    reset password
+// @access  Public
+router.put('/resetpassword', (req, res) => {
+    const { resetPasswordLink, newPassword } = req.body;
+
+    if(resetPasswordLink) {
+
+        jwt.verify(resetPasswordLink, process.env.SECRET_KEY, (err, decoded) => {
+            if (err) {
+                return res.status(400).json({
+                    error: 'Expired Link. Try again'
+                })
+
+            } else {
+                userModel
+                    .findOne({resetPasswordLink})
+                    .then(user => {
+                        const updateFields = { password: newPassword, resetPasswordLink: ''}
+
+                        user = lodash.extend(user, updateFields)
+
+                        user
+                            .save()
+                            .then(user => {
+                                res.json({
+                                    message: 'Great! Now you can login with new password',
+                                    userInfo: user
+                                })
+                            })
+                            .catch(err => res.status(408).json({
+                                error: 'Error resetting user passowrd'
+                            }))
+                    })
+                    .catch(err => res.status(500).json(err))
+            }
+        })
+    }
 })
 
 

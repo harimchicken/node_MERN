@@ -28,7 +28,7 @@ const userSchema = new Schema(
             default: 'email'
         },
         resetPasswordLink: {
-            data: String,
+            type: String,
             default: ''
         }
     },
