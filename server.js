@@ -3,6 +3,11 @@ const express = require('express')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const passport = require('passport')
+
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger.yaml');
+
 const app = express();
 
 require('./config/database')
@@ -27,6 +32,10 @@ require('./config/passport')(passport)
 app.use('/api/users', usersRoute)
 app.use('/api/profile', profilesRoute)
 app.use('/api/posts', postsRoute)
+
+// swagger docs route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 
 
 const PORT = process.env.PORT || 3000;

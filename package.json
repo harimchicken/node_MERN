@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/harimchicken/node_MERN#readme",
   "dependencies": {
-    "-": "^0.0.1",
     "@sendgrid/mail": "^7.4.6",
     "bcryptjs": "^2.4.3",
     "body-passer": "^1.0.0",
@@ -38,7 +37,10 @@
     "passport-jwt": "^4.0.0",
     "passport-kakao": "^1.0.1",
     "passport-kakao-token": "^0.1.5",
-    "passport-naver": "^1.0.6"
+    "passport-naver": "^1.0.6",
+    "swagger-jsdoc": "^6.1.0",
+    "swagger-ui-express": "^4.1.6",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.12"

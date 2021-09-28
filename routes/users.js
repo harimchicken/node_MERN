@@ -2,28 +2,28 @@
 const express = require('express')
 const router = express.Router()
 
-const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const jwt = require('jsonwebtoken');
 const JwtStrategy = require('passport-jwt/lib/strategy');
-const  sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.EMAIL_KEY)
-
-const userModel = require('../models/user');
-
-const lodash = require('lodash');
 
 const checkauth = passport.authenticate('jwt', { session: false});
 const checkgoogle = passport.authenticate('googleToken', { session: false});
 const checkfacebook = passport.authenticate('facebookToken', { session: false });
-const checknaver = passport.authenticate('naver-login', {session: false});
+
 
 
 const {
     user_register,
     user_activation,
     user_loggedIn,
+    user_login_google,
+    user_login_facebook,
+    user_forgot_password,
+    user_reset_password,
     user_current
 } = require('../controllers/user')
+
+
 
 
 // @route   POST localhost:5000/api/users/register
@@ -56,172 +56,23 @@ router.get('/current', checkauth, user_current)
 // @route   Get localhost:5000/api/users/google
 // @desc    LoggedIn user from google // return jwt
 // @access  Public
-router.get('/google', checkgoogle, (req, res) => {
-    const payload = { id: req.user._id }
-
-    const token = jwt.sign(
-        payload,
-        process.env.SECRET_KEY,
-        {expiresIn: '1h'}
-    )
-
-    res.json({
-        success: true,
-        token: "Bearer " + token
-    })
-})
+router.get('/google', checkgoogle, user_login_google) // Swagger_UI에서 get 메소드를 지원하지 않아 post로 변경
 
 
 // @route   Get localhost:5000/api/users/facebook
 // @desc    LoggedIn user from facebook // return jwt
 // @access  Public
-router.get('/facebook', checkfacebook, (req, res) => {
-    const payload = { id: req.user._id }
-
-    const token = jwt.sign(
-        payload,
-        process.env.SECRET_KEY,
-        {expiresIn: '1h'}
-    )
-
-    res.json({
-        success: true,
-        token: "Bearer " + token
-    })
-})
+router.get('/facebook', checkfacebook, user_login_facebook)
 
 // @route   PUT user/forgotpassword
 // @desc    forgot password / send email
 // @access  Public
-router.put('/forgotpassword', (req, res) => {
-    const {email} = req.body;
-
-    userModel
-        .findOne({email})
-        .then(user => {
-            console.log(user)
-            if (!user) {
-                res.status(404).json({
-                    message: 'user is not register'
-                })
-            }
-            // 유저가 있다면...
-            // 메일 보낼 준비
-            const payload = {_id: user._id};
-            const token = jwt.sign(
-                payload,
-                process.env.SECRET_KEY,
-                {expiresIn: '10m'}
-            )
-
-            const emailData = {
-                from: process.env.EMAIL_FROM,
-                to: email,
-                subject: "Password Reset Link",
-                html: `
-                <h1>Please use the following link to reset your password</h1>
-                <p>http://localhost:5000/user/password/reset/${token}</p>
-                <hr />,
-                <p>This email may contain sensetive information</p>
-                <p>http://localhost:5000</p>
-                `
-            }
-
-            return user
-                .updateOne({ resetPasswordLink: token })
-                .then(() => {
-
-                    sgMail
-                        .send(emailData)
-                        .then(() => {
-                            
-                            res.json({
-                                message: `Email has been sent to ${email}. Follow the instruction to activate your account`
-                            })
-                        })
-                        .catch(err => {
-                            return res.status(404).json({
-                                message: err.message
-                            })
-                        })
-                })
-                .catch(err => {
-                    res.status(408).json({
-                        error : 'Database connection error on user password forgot request'
-                    })
-
-                })
-
-
-            // return user
-            //     .updateOne({resetPasswordLink: token})
-            //     .then(user => {
-
-            //         console.log("*********", user)
-            //         sgMail
-            //             .send(emailDate)
-            //             .then((data) => {
-
-            //                 console.log(data)
-            //                 res.status(200).json({
-            //                     message: `Email has been sent to ${email}. Follow the instruction to activate your account`
-            //                 })
-            //             })
-            //             .catch(err => {
-            //                 return res.status(404).json({
-            //                     message: err.message
-            //                 })
-            //             })
-            //     })
-            //     .catch(err => {
-            //         res.status(408).json({
-            //             error: 'Database connection error on user password forgot request'
-            //         })
-            //     })
-
-        })
-        .catch(err => res.status(500).json(err))
-})
+router.put('/forgotpassword', user_forgot_password)
 
 // @route   PUT user/resetpassword
 // @desc    reset password
 // @access  Public
-router.put('/resetpassword', (req, res) => {
-    const { resetPasswordLink, newPassword } = req.body;
-
-    if(resetPasswordLink) {
-
-        jwt.verify(resetPasswordLink, process.env.SECRET_KEY, (err, decoded) => {
-            if (err) {
-                return res.status(400).json({
-                    error: 'Expired Link. Try again'
-                })
-
-            } else {
-                userModel
-                    .findOne({resetPasswordLink})
-                    .then(user => {
-                        const updateFields = { password: newPassword, resetPasswordLink: ''}
-
-                        user = lodash.extend(user, updateFields)
-
-                        user
-                            .save()
-                            .then(user => {
-                                res.json({
-                                    message: 'Great! Now you can login with new password',
-                                    userInfo: user
-                                })
-                            })
-                            .catch(err => res.status(408).json({
-                                error: 'Error resetting user passowrd'
-                            }))
-                    })
-                    .catch(err => res.status(500).json(err))
-            }
-        })
-    }
-})
+router.put('/resetpassword', user_reset_password)
 
 
 
